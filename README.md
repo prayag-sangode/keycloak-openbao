@@ -93,7 +93,19 @@ Start everything:
 docker-compose up -d
 ```
 
----
+## Disable https in postgres
+
+```
+psql -U keycloak -d keycloak
+
+UPDATE realm
+SET ssl_required = 'NONE'
+WHERE name = 'master';
+
+SELECT name, ssl_required FROM realm WHERE name = 'master';
+
+docker restart keycloak
+```
 
 ## Keycloak Configuration
 
