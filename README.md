@@ -126,6 +126,7 @@ docker-compose up -d
 Initialize:
 
 ```bash
+chmod -R 777 openbao
 docker exec -it openbao bao operator init -address=http://127.0.0.1:8200
 ```
 
