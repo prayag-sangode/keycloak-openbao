@@ -218,6 +218,67 @@ bao write auth/oidc/role/default \
 
 ---
 
+## KV v2 Curl Cheat Sheet
+
+
+- **Write a secret**
+  ```bash
+  curl \
+    -H "X-Vault-Token: $BAO_TOKEN" \
+    -H "Content-Type: application/json" \
+    -X POST \
+    -d '{"data":{"value":"world"}}' \
+    $BAO_ADDR/v1/secret/data/hello
+  ```
+
+- **Read a secret**
+  ```bash
+  curl \
+    -H "X-Vault-Token: $BAO_TOKEN" \
+    $BAO_ADDR/v1/secret/data/hello
+  ```
+
+- **List secrets**
+  ```bash
+  curl \
+    -H "X-Vault-Token: $BAO_TOKEN" \
+    -X LIST \
+    $BAO_ADDR/v1/secret/metadata/
+  ```
+
+- **Delete a version (soft delete)**
+  ```bash
+  curl \
+    -H "X-Vault-Token: $BAO_TOKEN" \
+    -H "Content-Type: application/json" \
+    -X POST \
+    -d '{"versions":[1]}' \
+    $BAO_ADDR/v1/secret/delete/hello
+  ```
+
+- **Undelete a version**
+  ```bash
+  curl \
+    -H "X-Vault-Token: $BAO_TOKEN" \
+    -H "Content-Type: application/json" \
+    -X POST \
+    -d '{"versions":[1]}' \
+    $BAO_ADDR/v1/secret/undelete/hello
+  ```
+
+- **Destroy a version (permanent)**
+  ```bash
+  curl \
+    -H "X-Vault-Token: $BAO_TOKEN" \
+    -H "Content-Type: application/json" \
+    -X POST \
+    -d '{"versions":[1]}' \
+    $BAO_ADDR/v1/secret/destroy/hello
+  ```
+
+---
+
+
 ## Notes
 
 - Store **unseal keys** and **root token** securely.  
