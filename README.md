@@ -284,5 +284,90 @@ bao write auth/oidc/role/default \
 - Store **unseal keys** and **root token** securely.  
 - For production, enable HTTPS and set `sslRequired=EXTERNAL` in Keycloak.  
 - Map Keycloak groups/roles to OpenBao policies for fine‑grained access control.
-  
+
+
+# For reference with domain url
+# Setup — OpenBao ↔ Keycloak OIDC
+
+## Bao Configuration
+**Auth mount path:** `auth/oidc`
+
+**Config:**
+```bash
+bao write auth/oidc/config \
+  oidc_discovery_url="http://keycloak.tcloudlz.telekom.net/realms/master" \
+  oidc_client_id="openbao-client" \
+  oidc_client_secret="<replace-me> \
+  default_role="default"
+```
+
+**Role:**
+```bash
+bao write auth/oidc/role/default \
+  bound_audiences="openbao-client" \
+  allowed_redirect_uris="http://openbao.tcloudlz.telekom.net/ui/vault/auth/oidc/callback,http://openbao.tcloudlz.telekom.net/ui/vault/auth/oidc/oidc/callback" \
+  user_claim="preferred_username" \
+  policies="default"
+```
+
+---
+
+## Keycloak Client (`openbao-client`)
+- **Client ID:** `openbao-client`  
+- **Client Secret:** same as Bao config  
+- **Valid Redirect URIs:**
+  ```
+  http://openbao.tcloudlz.telekom.net/ui/vault/auth/oidc/callback
+  http://openbao.tcloudlz.telekom.net/ui/vault/auth/oidc/oidc/callback
+  ```
+- **Mapper:**
+  - Name: `preferred_username`  
+  - Token Claim Name: `preferred_username`  
+  - Claim type: String  
+  - Add to ID token: 
+
+---
+
+## Verification Commands
+Check auth methods:
+```bash
+bao auth list
+```
+
+Check role:
+```bash
+bao list auth/oidc/role/
+bao read auth/oidc/role/default
+```
+
+Sample output:
+```
+allowed_redirect_uris [http://openbao.tcloudlz.telekom.net/ui/vault/auth/oidc/callback http://openbao.tcloudlz.telekom.net/ui/vault/auth/oidc/oidc/callback]
+bound_audiences       [openbao-client]
+user_claim            preferred_username
+policies              [default]
+role_type             oidc
+token_type            default
+```
+
+Check config:
+```bash
+bao read auth/oidc/config
+```
+
+---
+
+## Login Flow
+1. User clicks **OIDC login** in Bao UI.  
+2. Redirects to Keycloak → login with credentials.  
+3. Keycloak validates redirect URI (both whitelisted).  
+4. Returns token with `preferred_username`.  
+5. Bao issues a token bound to the `default` policy.  
+
+---
+
+## Key Lessons
+- **Redirect URIs must match exactly** — whitelist both if Bao UI generates duplicates.  
+- **Role must exist** under the correct mount path (`auth/oidc`).  
+- **Keycloak client mappers** must expose the claim Bao expects (`preferred_username`).  
 
